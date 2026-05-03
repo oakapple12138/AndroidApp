@@ -1,12 +1,14 @@
 package com.oakapple.myapplication.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -45,7 +47,7 @@ fun 主界面(控制器: 文件管理器控制器, 请求权限回调: () -> Uni
         )
     }
 
-    Column(Modifier.fillMaxSize()) {
+    Column(Modifier.fillMaxSize().navigationBarsPadding()) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -64,5 +66,21 @@ fun 主界面(控制器: 文件管理器控制器, 请求权限回调: () -> Uni
             文件列表(控制器, 焦点.左, Modifier.weight(1f))
             文件列表(控制器, 焦点.右, Modifier.weight(1f))
         }
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(0.05f)
+                .background(Color(0.5f, 0.5f, 0.5f)),
+            contentAlignment = Alignment.Center
+        ){
+            Row (
+                modifier = Modifier.fillMaxSize(),
+                horizontalArrangement = Arrangement.Center
+            ){
+                新建文件(控制器)
+            }
+        }
+
     }
 }

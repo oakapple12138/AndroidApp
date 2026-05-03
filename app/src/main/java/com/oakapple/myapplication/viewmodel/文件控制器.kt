@@ -93,18 +93,90 @@ class 文件管理器控制器 : ViewModel() {
 
     fun 文件复制() {
         try {
-            val 源文件 = _当前选中文件 ?: throw NullPointerException("当前选中文件为null")
+            val 源文件 = _当前选中文件!!
             val 目标目录 = if (_当前焦点.value == 焦点.左) _右页面目录.value!! else _左页面目录.value!!
-            val 目标文件 = File(目标目录, 源文件.name)
-            文件夹复制JNI(源文件.absolutePath, 目标文件.absolutePath)
-            _刷新版本.value++
-        } catch (_: NullPointerException) {
-            显示文件操作异常弹窗(true, "当前选中文件变null啦！")
+
+            if (源文件.isDirectory) {
+                val 目标文件 = File(目标目录, 源文件.name)
+                文件夹复制JNI(源文件.absolutePath, 目标文件.absolutePath)
+                _刷新版本.value++
+            } else {
+                val 目标文件 = File(目标目录, 源文件.name)
+                源文件.copyTo(目标文件, overwrite = true)
+                _刷新版本.value++
+            }
         } catch (e: Exception) {
             显示文件操作异常弹窗(true, "复制失败: ${e.message}")
         }
         _文件操作弹窗状态.value = false
         _当前选中文件 = null
+    }
+
+    fun 文件移动(){
+        try {
+            val 源文件 = _当前选中文件!!
+            val 目标目录 = if (_当前焦点.value == 焦点.左) _右页面目录.value!! else _左页面目录.value!!
+
+            if (源文件.isDirectory && 是子目录(源文件, 目标目录)) {
+                显示文件操作异常弹窗(true, "禁止将文件夹移动到自身子文件夹")
+            } else {
+                val 目标文件 = File(目标目录, 源文件.name)
+                if (!源文件.renameTo(目标文件)) throw Exception("移动失败")
+                _刷新版本.value++
+            }
+        } catch (e: Exception) {
+            显示文件操作异常弹窗(true, "移动失败: ${e.message}")
+        }
+        _文件操作弹窗状态.value = false
+        _当前选中文件 = null
+    }
+
+    fun 文件重命名(新名称: String){
+        try {
+            val 源文件 = _当前选中文件!!
+            val 目标 = File(源文件.parentFile, 新名称)
+            if (!源文件.renameTo(目标)) throw Exception("重命名失败")
+            _刷新版本.value++
+        } catch (e: Exception) {
+            显示文件操作异常弹窗(true, "重命名失败: ${e.message}")
+        }
+        _文件操作弹窗状态.value = false
+        _当前选中文件 = null
+    }
+
+    private fun 是子目录(源: File, 目标: File): Boolean {
+        return try {
+            val 源路径 = 源.canonicalPath
+            val 目标路径 = 目标.canonicalPath
+            目标路径 == 源路径 || 目标路径.startsWith("$源路径/")
+        } catch (_: Exception) {
+            false
+        }
+    }
+
+    fun 文件删除(){
+        try {
+            if (!_当前选中文件!!.deleteRecursively()) throw Exception("删除失败")
+            _刷新版本.value++
+        } catch (e: Exception) {
+            显示文件操作异常弹窗(true, "删除失败: ${e.message}")
+        }
+        _当前选中文件 = null
+    }
+
+    fun 文件新建(名称: String, 是文件夹: Boolean) {
+        try {
+            val 目标 = File(当前目录, 名称)
+            if (是文件夹) {
+                目标.mkdirs()
+            } else {
+                目标.createNewFile()
+            }
+            if (!目标.exists()) throw Exception("创建失败")
+            _刷新版本.value++
+        } catch (e: Exception) {
+            显示文件操作异常弹窗(true, "新建失败: ${e.message}")
+        }
     }
 
     external fun 文件夹复制JNI(当前选中文件夹: String, 目标文件夹: String)

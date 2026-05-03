@@ -2,6 +2,7 @@
 #include <jni.h>
 #include <android/log.h>
 #include "includes/oak.hpp"
+#include <filesystem>
 
 extern "C"
 JNIEXPORT void JNICALL
